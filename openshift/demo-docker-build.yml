@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Template
+metadata:
+  annotations:
+    iconClass: icon-java
+  labels:
+    app: demo
+    build: demo
+  name: demo-build-template
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${SERVICE_NAME}
+    labels:
+      app: ${SERVICE_NAME}
+  spec: {}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: ${SERVICE_NAME}
+      app: ${SERVICE_NAME}
+    name: ${SERVICE_NAME}
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${SERVICE_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: redhat-openjdk18-openshift:1.1
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - github:
+        secret: 6nbHURCpq4JstpCxXZvj
+      type: GitHub
+    - generic:
+        secret: 2LbGK2Qosi2uCh5Knsla
+      type: Generic
+parameters:
+- displayName: Service name
+  name: SERVICE_NAME
+  required: true
+  value: demo
+- displayName: ImageStream Namespace
+  description: Namespace in which the ImageStreams for Red Hat OpenJDK image is installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.
+  name: IMAGE_STREAM_NAMESPACE
+  required: true
+  value: openshift

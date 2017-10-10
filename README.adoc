@@ -1,0 +1,106 @@
+= Example of a Jenkins pipeline with gradle
+
+There are a lot of example of Jenkins pipeline on openshift with maven and Nexus 2 but not that much with gradle and Nexus 3.
+This project aims to be a PoC and serves as guideline for who wants to play with.
+
+== Openshift
+
+This example has been tested with link:https://github.com/minishift/minishift[Minishift].
+
+To start a new Openshift instance:
+
+[source,shell]
+----
+minishift config set cpus 4
+minishift config set memory 4GB
+minishift start
+----
+
+=== Prerequisite
+
+In this example, we will create one project "cicd". This project will contain all the CICD infrastructure such as:
+
+* Jenkins master/slave: to orchestrate the pipeline
+* Nexus 3: to store the generated artifacts (in this case, the jars)
+* Sonar: for code analysis
+
+First, let's import official redhat image:
+
+[source,shell]
+----
+oc login -u system:admin
+oc project openshift
+oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/jboss-image-streams.json
+----
+
+==== CICD project
+
+Create the "cicd" project:
+
+[source,shell]
+----
+oc new-project cicd
+----
+
+===== Jenkins
+
+Create jenkins instance in current project (cicd):
+
+[source,shell]
+----
+oc new-app jenkins-persistent -p MEMORY_LIMIT=2Gi \
+    -p VOLUME_CAPACITY=5Gi \
+    -e JAVA_GC_OPTS="-XX:+UseParallelGC -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90"
+----
+
+This will also create a "jenkins" service account dedicated the jenkins pods.
+
+Create the jenkins gradle slave:
+
+[source,shell]
+----
+oc new-build https://github.com/arnaud-deprez/jenkins.git#feature/gradle --context-dir=slave-maven \
+    --name=jenkins-slave-gradle-centos7
+oc create -f https://raw.githubusercontent.com/arnaud-deprez/jenkins/feature/gradle/slave-maven/openshift/slave-config.yml
+----
+
+===== Nexus 3
+
+Next, you can install Nexus 3 by following link:https://github.com/arnaud-deprez/nexus3-docker[this guide].
+
+=== Pipeline definition
+
+The project will go to several steps:
+
+1. Build: jars
+1. Tests
+1. Build docker image: this use link:https://access.redhat.com/documentation/en-us/red_hat_jboss_middleware_for_openshift/3/html-single/red_hat_java_s2i_for_openshift[java redhat s2i image]
+1. Deploy in dev
+1. Deploy in staging
+1. Wait for approval
+1. Deploy in prod
+
+So first, let's create these projects:
+
+[source,shell]
+----
+oc new-project dev
+oc new-project staging
+oc new-project prod
+----
+
+As Jenkins will have to edit these 3 projects, we must give permission to its service account:
+
+[source,shell]
+----
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n dev
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n staging
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n prod
+----
+
+Then in cicd project, create the pipeline BuildConfig:
+
+[source,shell]
+----
+oc create -n cicd -f openshift/demo-pipeline.yml
+----

@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Template
+metadata:
+  annotations:
+    iconClass: icon-java
+  labels:
+    app: demo
+  name: demo-app-template
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${SERVICE_NAME}
+    name: ${SERVICE_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${SERVICE_NAME}
+      deploymentconfig: ${SERVICE_NAME}
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${SERVICE_NAME}
+          deploymentconfig: ${SERVICE_NAME}
+      spec:
+        containers:
+        - image: ""
+          imagePullPolicy: Always
+          name: app
+          ports:
+          - containerPort: 8443
+            protocol: TCP
+          - containerPort: 8778
+            protocol: TCP
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: ${{AUTOMATIC_TRIGGER}}
+        containerNames:
+        - app
+        from:
+          kind: ImageStreamTag
+          name: ${SERVICE_NAME}:${VERSION}
+      type: ImageChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${SERVICE_NAME}
+      deploymentconfig: ${SERVICE_NAME}
+    name: ${SERVICE_NAME}
+  spec:
+    ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: ${SERVICE_NAME}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: ${SERVICE_NAME}
+      deploymentconfig: ${SERVICE_NAME}
+    name: ${SERVICE_NAME}
+  spec:
+    to:
+      kind: Service
+      name: ${SERVICE_NAME}
+parameters:
+- displayName: Service name
+  name: SERVICE_NAME
+  required: true
+  value: demo
+- displayName: Version
+  name: VERSION
+  required: true
+  value: latest
+- displayName: Wether it should trigger an automatic deployment when a new image is published
+  name: AUTOMATIC_TRIGGER
+  required: true
+  value: "true"
