@@ -1,0 +1,57 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.7.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'maven-publish'
+
+group = 'com.powple'
+version = '0.0.2-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-actuator-docs')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifactId 'demo'
+		}
+	}
+
+	// This should be overriden by gradle init script
+	repositories {
+		maven {
+			if (project.version.endsWith('-SNAPSHOT')) {
+				url = 'http://localhost:8081/nexus/content/repositories/maven-snapshots'
+			} else {
+				url = 'http://localhost:8081/nexus/content/repositories/maven-releases'
+			}
+			credentials {
+				username = 'dummy'
+				password = 'dummy'
+			}
+		}
+	}
+}
+
