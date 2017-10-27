@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git url: "https://github.com/arnaud-deprez/demo-jenkins-pipeline-gradle.git", branch: "pipeline"
+                git url: "https://github.com/arnaud-deprez/demo-jenkins-pipeline-gradle.git"
                 sh "gradle bootRepackage --stacktrace"
                 sh 'jarFile=`ls build/libs | grep -v original` && mkdir -p ocp/deployments && cp build/libs/$jarFile ocp/deployments/'
             }

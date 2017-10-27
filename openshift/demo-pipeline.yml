@@ -14,7 +14,6 @@ items:
     failedBuildHistoryLimit: 2
     source:
       git:
-        ref: pipeline
         uri: https://github.com/arnaud-deprez/demo-jenkins-pipeline-gradle.git
       type: Git
     strategy:
