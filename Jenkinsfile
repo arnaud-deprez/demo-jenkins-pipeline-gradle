@@ -42,11 +42,11 @@ pipeline {
                 // deployment is triggered by imagestream here
                 sh "oc process -f openshift/demo-template.yml -p VERSION=latest | oc apply -n staging -f -"
                 openshiftVerifyDeployment depCfg: "demo", namespace: "staging"
-                input "Does the staging environment look ok ?"
             }
         }
         stage('Prod') {
             steps {
+                input "Does the staging environment look ok ?"
                 openshiftTag namespace: "staging", srcStream: "demo", srcTag: "latest", destinationNamespace: "prod", destStream: "demo", destTag: "latest"
                 // deployment is triggered by imagestream here
                 sh "oc process -f openshift/demo-template.yml -p VERSION=latest | oc apply -n prod -f -"
