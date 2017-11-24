@@ -45,7 +45,13 @@ objects:
             protocol: TCP
           - containerPort: 8080
             protocol: TCP
-          resources: {}
+          resources: 
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           readinessProbe:

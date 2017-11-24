@@ -30,7 +30,13 @@ objects:
         kind: ImageStreamTag
         name: ${SERVICE_NAME}:latest
     postCommit: {}
-    resources: {}
+    resources: 
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
     runPolicy: Serial
     source:
       binary: {}

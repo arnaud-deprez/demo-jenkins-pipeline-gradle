@@ -48,9 +48,8 @@ Create jenkins instance in current project (cicd):
 
 [source,shell]
 ----
-oc new-app jenkins-persistent -p MEMORY_LIMIT=2Gi \
-    -p VOLUME_CAPACITY=5Gi \
-    -e JAVA_GC_OPTS="-XX:+UseParallelGC -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90"
+oc new-app jenkins-persistent -p MEMORY_LIMIT=1Gi \
+    -p VOLUME_CAPACITY=2Gi
 ----
 
 This will also create a "jenkins" service account dedicated the jenkins pods.
