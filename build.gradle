@@ -29,19 +29,4 @@ publishing {
 			artifactId 'demo'
 		}
 	}
-
-	// This should be overriden by gradle init script
-	repositories {
-		maven {
-			if (project.version.endsWith('-SNAPSHOT')) {
-				url = 'http://localhost:8081/nexus/content/repositories/maven-snapshots'
-			} else {
-				url = 'http://localhost:8081/nexus/content/repositories/maven-releases'
-			}
-			credentials {
-				username = 'dummy'
-				password = 'dummy'
-			}
-		}
-	}
 }
