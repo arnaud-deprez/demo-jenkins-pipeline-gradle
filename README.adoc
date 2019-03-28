@@ -54,11 +54,11 @@ oc new-app jenkins-persistent -p MEMORY_LIMIT=1Gi \
 
 This will also create a "jenkins" service account dedicated the jenkins pods.
 
-Create the jenkins gradle slave with link:https://github.com/arnaud-deprez/jenkins-slave-docker/blob/master/slave-gradle/README.md[this guide].
+Create the jenkins gradle slave with link:https://github.com/arnaud-deprez/jenkins-docker-openshift/tree/master/agent-gradle/README.md[this guide].
 
 ===== Nexus 3
 
-Next, you can install Nexus 3 by following link:https://github.com/arnaud-deprez/nexus3-docker/blob/master/README.adoc[this guide].
+Next, you can install Nexus 3 by following link:https://github.com/arnaud-deprez/nexus3-docker/blob/master/README.md[this guide].
 
 === Pipeline definition
 
